@@ -169,7 +169,7 @@ namespace ConsoleApplication1
         }
 
         [TestMethod]
-        public void PrivateSetAutoPropertyCanUseReadOnlyAutoPropertyAnalyzer_WithNestedClass_DoesInvokesWarning()
+        public void PrivateSetAutoPropertyCanUseReadOnlyAutoPropertyAnalyzer_WithNestedClassWithNoIssue_DoesInvokesWarning()
         {
             var original = @"
 using System;
@@ -204,11 +204,94 @@ namespace ConsoleApplication1
                 Message = PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.Message,
                 Severity = PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.Severity,
 
-                Locations =
-new[]
+                Locations = new[]
+                            {
+                                new DiagnosticResultLocation("Test0.cs", 9, 40)
+                            }
+            };
+
+
+            VerifyDiagnostic(original, expectedDiagnostic);
+            //todo: create fix
+            //VerifyFix(original, result);
+        }
+
+        [TestMethod]
+        public void PrivateSetAutoPropertyCanUseReadOnlyAutoPropertyAnalyzer_WithNestedClassWithIssue_DoesInvokesWarning()
+        {
+            var original = @"
+using System;
+using System.Text;
+
+namespace ConsoleApplication1
 {
-                            new DiagnosticResultLocation("Test0.cs", 9, 40)
-}
+    public class MyClass
+    {
+        private class NestedClass
+        {
+            internal int SomeProperty { get; private set; }
+
+            NestedClass()
+            {
+                this.SomeProperty = 42;
+            }
+        }
+    }
+}";
+
+            var expectedDiagnostic = new DiagnosticResult
+            {
+                Id = PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.DiagnosticId,
+                Message = PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.Message,
+                Severity = PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.Severity,
+
+                Locations = new[]
+                            {
+                                new DiagnosticResultLocation("Test0.cs", 11, 46)
+                            }
+            };
+
+
+            VerifyDiagnostic(original, expectedDiagnostic);
+            //todo: create fix
+            //VerifyFix(original, result);
+        }
+
+        [TestMethod]
+        public void PrivateSetAutoPropertyCanUseReadOnlyAutoPropertyAnalyzer_PropertyAssignmentWithOutThisKeyword_InvokesWarning()
+        {
+            var original = @"
+using System;
+using System.Text;
+
+namespace ConsoleApplication1
+{
+    class MyClass
+    {
+        int SomeProperty {get; private set;}
+   
+        MyClass()
+        {
+            SomeProperty = 42;
+        }
+
+        void SomeMethod()
+        {
+            Console.WriteLine(""awesome"");
+        }
+    }
+}";
+            var expectedDiagnostic = new DiagnosticResult
+            {
+                Id = PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.DiagnosticId,
+                Message = PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.Message,
+                Severity = PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.Severity,
+
+                Locations =
+                        new[]
+                        {
+                            new DiagnosticResultLocation("Test0.cs", 9, 32)
+                        }
             };
 
 

@@ -3,23 +3,19 @@ using System.Text;
 
 namespace ConsoleApplication1
 {
-    public class MyClass
+    class MyClass
     {
-        public int SomeProperty { get; private set; }
+        internal int SomeProperty { get; private set; }
 
         MyClass()
         {
-            this.SomeProperty = 42;
+            SomeProperty = 42;
+            this.SomeProperty = 10;
         }
 
-        private class NestedClass
+        void SomeMethod()
         {
-            internal int SomeProperty { get; set; }
-
-            void Foo()
-            {
-                SomeProperty = 10;
-            }
+            Console.WriteLine("awesome");
         }
     }
 }
