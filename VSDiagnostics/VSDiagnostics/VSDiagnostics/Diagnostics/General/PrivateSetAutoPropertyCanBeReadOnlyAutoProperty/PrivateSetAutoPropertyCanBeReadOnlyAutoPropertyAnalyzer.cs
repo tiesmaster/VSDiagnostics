@@ -61,9 +61,16 @@ namespace VSDiagnostics.Diagnostics.General.PrivateSetAutoPropertyCanBeReadOnlyA
 
         private static bool TreeHasMethodsThatSetProperty(PropertyDeclarationSyntax propertyDeclaration)
         {
-            var root = propertyDeclaration.SyntaxTree.GetRoot();
-            var assignments = root.DescendantNodes().OfType<AssignmentExpressionSyntax>();
-                                
+            var parentClass = propertyDeclaration.Ancestors()
+                                .OfType<ClassDeclarationSyntax>()
+                                .First();
+      
+            //strip any nested classes
+            parentClass = parentClass.RemoveNodes(parentClass.DescendantNodes().OfType<ClassDeclarationSyntax>(), SyntaxRemoveOptions.KeepNoTrivia);
+
+            var assignments = parentClass.DescendantNodes()
+                             .OfType<AssignmentExpressionSyntax>();
+
             return assignments.Select(a => a.Left)
                                 .Cast<MemberAccessExpressionSyntax>()
                                 .Select(l => l.Name.Identifier)

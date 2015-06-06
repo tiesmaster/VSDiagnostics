@@ -177,20 +177,20 @@ using System.Text;
 
 namespace ConsoleApplication1
 {
-    class MyClass
+    public class MyClass
     {
-        int SomeProperty {get; private set;}
-   
+        public int SomeProperty { get; private set; }
+
         MyClass()
         {
             this.SomeProperty = 42;
         }
 
-        class NestedClass
+        private class NestedClass
         {
-            int SomeProperty {get; set;}
+            internal int SomeProperty { get; set; }
 
-            Foo()
+            void Foo()
             {
                 SomeProperty = 10;
             }
@@ -207,7 +207,7 @@ namespace ConsoleApplication1
                 Locations =
 new[]
 {
-                            new DiagnosticResultLocation("Test0.cs", 9, 32)
+                            new DiagnosticResultLocation("Test0.cs", 9, 40)
 }
             };
 
