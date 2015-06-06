@@ -167,5 +167,54 @@ namespace ConsoleApplication1
             VerifyDiagnostic(original);
             //todo: create quickfix
         }
+
+        [TestMethod]
+        public void PrivateSetAutoPropertyCanUseReadOnlyAutoPropertyAnalyzer_WithNestedClass_DoesInvokesWarning()
+        {
+            var original = @"
+using System;
+using System.Text;
+
+namespace ConsoleApplication1
+{
+    class MyClass
+    {
+        int SomeProperty {get; private set;}
+   
+        MyClass()
+        {
+            this.SomeProperty = 42;
+        }
+
+        class NestedClass
+        {
+            int SomeProperty {get; set;}
+
+            Foo()
+            {
+                SomeProperty = 10;
+            }
+        }
+    }
+}";
+
+            var expectedDiagnostic = new DiagnosticResult
+            {
+                Id = PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.DiagnosticId,
+                Message = PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.Message,
+                Severity = PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.Severity,
+
+                Locations =
+new[]
+{
+                            new DiagnosticResultLocation("Test0.cs", 9, 32)
+}
+            };
+
+
+            VerifyDiagnostic(original, expectedDiagnostic);
+            //todo: create fix
+            //VerifyFix(original, result);
+        }
     }
 }

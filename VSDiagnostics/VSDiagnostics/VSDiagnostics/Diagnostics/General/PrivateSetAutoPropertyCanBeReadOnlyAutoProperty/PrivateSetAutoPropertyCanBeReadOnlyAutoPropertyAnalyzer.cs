@@ -46,9 +46,8 @@ namespace VSDiagnostics.Diagnostics.General.PrivateSetAutoPropertyCanBeReadOnlyA
 
         private Diagnostic HandleProperty(PropertyDeclarationSyntax propertyDeclaration)
         {
-    
-            var setter = propertyDeclaration.AccessorList.Accessors.FirstOrDefault(s => s.IsKind(SyntaxKind.SetAccessorDeclaration) 
-                                                                                    && s.Modifiers.Any(m => m.IsKind(SyntaxKind.PrivateKeyword)));
+            var setter = propertyDeclaration.AccessorList.Accessors.FirstOrDefault(s => s.IsKind(SyntaxKind.SetAccessorDeclaration)
+                                                                                    && s.Modifiers.Any(SyntaxKind.PrivateKeyword));
             if (setter != null)
             {
                 if ( !TreeHasMethodsThatSetProperty(propertyDeclaration) )
