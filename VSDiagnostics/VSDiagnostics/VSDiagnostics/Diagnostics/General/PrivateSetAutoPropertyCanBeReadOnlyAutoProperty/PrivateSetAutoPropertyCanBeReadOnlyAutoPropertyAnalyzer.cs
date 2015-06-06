@@ -72,6 +72,7 @@ namespace VSDiagnostics.Diagnostics.General.PrivateSetAutoPropertyCanBeReadOnlyA
                              .OfType<AssignmentExpressionSyntax>();
 
             return assignments.Select(a => a.Left)
+                                //bug: a.Left is sometimes a IdentifierNameSyntax, so this cast is broken
                                 .Cast<MemberAccessExpressionSyntax>()
                                 .Select(l => l.Name.Identifier)
                                 .Any
