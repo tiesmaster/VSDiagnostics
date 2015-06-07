@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.CodeAnalysis.CodeFixes;
+﻿using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RoslynTester.DiagnosticResults;
@@ -11,19 +10,11 @@ namespace VSDiagnostics.Test.Tests.General
     [TestClass]
     public class PrivateSetAutoPropertyCanUseReadOnlyAutoPropertyTests : CSharpCodeFixVerifier
     {
-        protected override CodeFixProvider CodeFixProvider
-        {
-            get
-            {
-                //todo: create quick fix
-                throw new NotImplementedException();
-            }
-        }
-
+        protected override CodeFixProvider CodeFixProvider => null;
         protected override DiagnosticAnalyzer DiagnosticAnalyzer => new PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer();
 
         [TestMethod]
-        public void PrivateSetAutoPropertyCanUseReadOnlyAutoPropertyAnalyzer_WithConstructorAccessOnly_InvokesWarning()
+        public void PrivateSetAutoPropertyCanUseReadOnlyAutoPropertyAnalyzer_WithConstructorSetAccess_InvokesWarning()
         {
             var original = @"
 using System;
@@ -33,40 +24,52 @@ namespace ConsoleApplication1
 {
     class MyClass
     {
-        int SomeProperty {get; private set;}
+        int SomeProperty { get; private set; }
    
         MyClass()
         {
             this.SomeProperty = 42;
         }
+    }
+}";
 
-        void SomeMethod()
+            var expected = @"
+using System;
+using System.Text;
+
+namespace ConsoleApplication1
+{
+    class MyClass
+    {
+        int SomeProperty { get; }
+   
+        MyClass()
         {
-            Console.WriteLine(""awesome"");
+            this.SomeProperty = 42;
         }
     }
 }";
+
+
             var expectedDiagnostic = new DiagnosticResult
             {
                 Id = PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.DiagnosticId,
                 Message = PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.Message,
                 Severity = PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.Severity,
-
                 Locations =
-                        new[]
-                        {
-                            new DiagnosticResultLocation("Test0.cs", 9, 32)
-                        }
+                    new[]
+                    {
+                        new DiagnosticResultLocation("Test0.cs", 9, 33)
+                    }
             };
 
 
             VerifyDiagnostic(original, expectedDiagnostic);
-            //todo: create fix
-            //VerifyFix(original, result);
+            //VerifyFix(original, expected);
         }
 
         [TestMethod]
-        public void PrivateSetAutoPropertyCanUseReadOnlyAutoPropertyAnalyzer_WithOnlyGetterAccess_InvokesWarning()
+        public void PrivateSetAutoPropertyCanUseReadOnlyAutoPropertyAnalyzer_WithMethodGetAccess_InvokesWarning()
         {
             var original = @"
 using System;
@@ -76,12 +79,24 @@ namespace ConsoleApplication1
 {
     class MyClass
     {
-        int SomeProperty {get; private set;}
-   
-        MyClass()
+        int SomeProperty { get; private set; }
+
+        void SomeMethod()
         {
-            this.SomeProperty = 42;
+            Console.WriteLine(SomeProperty);
         }
+    }
+}";
+
+            var expected = @"
+using System;
+using System.Text;
+
+namespace ConsoleApplication1
+{
+    class MyClass
+    {
+        int SomeProperty { get; }
 
         void SomeMethod()
         {
@@ -95,22 +110,20 @@ namespace ConsoleApplication1
                 Id = PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.DiagnosticId,
                 Message = PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.Message,
                 Severity = PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.Severity,
-
                 Locations =
-            new[]
-            {
-                            new DiagnosticResultLocation("Test0.cs", 9, 32)
-            }
+                    new[]
+                    {
+                        new DiagnosticResultLocation("Test0.cs", 9, 33)
+                    }
             };
 
 
             VerifyDiagnostic(original, expectedDiagnostic);
-            //todo: create fix
-            //VerifyFix(original, result);
+            //VerifyFix(original, expected);
         }
 
         [TestMethod]
-        public void PrivateSetAutoPropertyCanUseReadOnlyAutoPropertyAnalyzer_WithMethodAccess_DoesNotInvokesWarning()
+        public void PrivateSetAutoPropertyCanUseReadOnlyAutoPropertyAnalyzer_WithMethodSetAccess_DoesNotInvokesWarning()
         {
             var original = @"
 using System;
@@ -120,12 +133,7 @@ namespace ConsoleApplication1
 {
     class MyClass
     {
-        int SomeProperty {get; private set;}
-   
-        MyClass()
-        {
-            this.SomeProperty = 42;
-        }
+        int SomeProperty { et; private set; }
 
         void SomeMethod()
         {
@@ -135,11 +143,10 @@ namespace ConsoleApplication1
 }";
 
             VerifyDiagnostic(original);
-            //todo: create quick fix
         }
 
         [TestMethod]
-        public void PrivateSetAutoPropertyCanUseReadOnlyAutoPropertyAnalyzer_WithReadOnlyProperty_DoesNotInvokesWarning()
+        public void PrivateSetAutoPropertyCanUseReadOnlyAutoPropertyAnalyzer_WithoutPrivateSetter_DoesNotInvokesWarning()
         {
             var original = @"
 using System;
@@ -149,7 +156,6 @@ namespace ConsoleApplication1
 {
     class MyClass
     {
-        int SomeProperty { get; } = 42;
         int SomeOtherProperty { get; set; };
    
         MyClass()
@@ -165,11 +171,10 @@ namespace ConsoleApplication1
 }";
 
             VerifyDiagnostic(original);
-            //todo: create quickfix
         }
 
         [TestMethod]
-        public void PrivateSetAutoPropertyCanUseReadOnlyAutoPropertyAnalyzer_WithNestedClassWithNoIssue_DoesInvokesWarning()
+        public void PrivateSetAutoPropertyCanUseReadOnlyAutoPropertyAnalyzer_WithNestedClass_WithoutStaticProperty_InvokesWarning()
         {
             var original = @"
 using System;
@@ -188,11 +193,38 @@ namespace ConsoleApplication1
 
         private class NestedClass
         {
-            internal int SomeProperty { get; set; }
+            internal int AnotherProperty { get; set; }
 
             void Foo()
             {
-                SomeProperty = 10;
+                AnotherProperty = 10;
+            }
+        }
+    }
+}";
+
+            var expected = @"
+using System;
+using System.Text;
+
+namespace ConsoleApplication1
+{
+    public class MyClass
+    {
+        public int SomeProperty { get; }
+
+        MyClass()
+        {
+            this.SomeProperty = 42;
+        }
+
+        private class NestedClass
+        {
+            internal int AnotherProperty { get; set; }
+
+            void Foo()
+            {
+                AnotherProperty = 10;
             }
         }
     }
@@ -203,21 +235,19 @@ namespace ConsoleApplication1
                 Id = PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.DiagnosticId,
                 Message = PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.Message,
                 Severity = PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.Severity,
-
                 Locations = new[]
-                            {
-                                new DiagnosticResultLocation("Test0.cs", 9, 40)
-                            }
+                {
+                    new DiagnosticResultLocation("Test0.cs", 9, 40)
+                }
             };
 
 
             VerifyDiagnostic(original, expectedDiagnostic);
-            //todo: create fix
-            //VerifyFix(original, result);
+            //VerifyFix(original, expected);
         }
 
         [TestMethod]
-        public void PrivateSetAutoPropertyCanUseReadOnlyAutoPropertyAnalyzer_WithNestedClassWithIssue_DoesInvokesWarning()
+        public void PrivateSetAutoPropertyCanUseReadOnlyAutoPropertyAnalyzer_WithNestedClass_InvokesWarning()
         {
             var original = @"
 using System;
@@ -239,26 +269,44 @@ namespace ConsoleApplication1
     }
 }";
 
+            var expected = @"
+using System;
+using System.Text;
+
+namespace ConsoleApplication1
+{
+    public class MyClass
+    {
+        private class NestedClass
+        {
+            internal int SomeProperty { get; }
+
+            NestedClass()
+            {
+                this.SomeProperty = 42;
+            }
+        }
+    }
+}";
+
             var expectedDiagnostic = new DiagnosticResult
             {
                 Id = PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.DiagnosticId,
                 Message = PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.Message,
                 Severity = PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.Severity,
-
                 Locations = new[]
-                            {
-                                new DiagnosticResultLocation("Test0.cs", 11, 46)
-                            }
+                {
+                    new DiagnosticResultLocation("Test0.cs", 11, 46)
+                }
             };
 
 
             VerifyDiagnostic(original, expectedDiagnostic);
-            //todo: create fix
-            //VerifyFix(original, result);
+            //VerifyFix(original, expected);
         }
 
         [TestMethod]
-        public void PrivateSetAutoPropertyCanUseReadOnlyAutoPropertyAnalyzer_PropertyAssignmentWithOutThisKeyword_InvokesWarning()
+        public void PrivateSetAutoPropertyCanUseReadOnlyAutoPropertyAnalyzer_PropertyAssignmentWithoutThisKeyword_InvokesWarning()
         {
             var original = @"
 using System;
@@ -268,16 +316,28 @@ namespace ConsoleApplication1
 {
     class MyClass
     {
-        int SomeProperty {get; private set;}
+        int SomeProperty { get; private set; }
    
         MyClass()
         {
             SomeProperty = 42;
         }
+    }
+}";
 
-        void SomeMethod()
+            var expected = @"
+using System;
+using System.Text;
+
+namespace ConsoleApplication1
+{
+    class MyClass
+    {
+        int SomeProperty {get; }
+   
+        MyClass()
         {
-            Console.WriteLine(""awesome"");
+            SomeProperty = 42;
         }
     }
 }";
@@ -286,18 +346,118 @@ namespace ConsoleApplication1
                 Id = PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.DiagnosticId,
                 Message = PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.Message,
                 Severity = PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.Severity,
-
                 Locations =
-                        new[]
-                        {
-                            new DiagnosticResultLocation("Test0.cs", 9, 32)
-                        }
+                    new[]
+                    {
+                        new DiagnosticResultLocation("Test0.cs", 9, 32)
+                    }
             };
 
 
             VerifyDiagnostic(original, expectedDiagnostic);
-            //todo: create fix
-            //VerifyFix(original, result);
+            //VerifyFix(original, expected);
+        }
+
+        [TestMethod]
+        public void PrivateSetAutoPropertyCanUseReadOnlyAutoPropertyAnalyzer_WithStaticProperty_WithInstanceUsage_DoesNotInvokeWarning()
+        {
+            var original = @"
+using System;
+using System.Text;
+
+namespace ConsoleApplication1
+{
+    public class MyClass
+    {
+        public static int SomeProperty { get; private set; }
+
+        MyClass()
+        {
+            SomeProperty = 42;
+        }
+    }
+}";
+            VerifyDiagnostic(original);
+        }
+
+        [TestMethod]
+        public void PrivateSetAutoPropertyCanUseReadOnlyAutoPropertyAnalyzer_WithStaticProperty_WithOnlyStaticUsage_InvokesWarning()
+        {
+            var original = @"
+using System;
+using System.Text;
+
+namespace ConsoleApplication1
+{
+    class MyClass
+    {
+        static int SomeProperty { get; private set; }
+
+        static MyClass()
+        {
+            SomeProperty = 42;
+        }
+    }
+}";
+
+            var expected = @"
+using System;
+using System.Text;
+
+namespace ConsoleApplication1
+{
+    class MyClass
+    {
+        static int SomeProperty { get; }
+
+        static MyClass()
+        {
+            SomeProperty = 42;
+        }
+    }
+}";
+            var expectedDiagnostic = new DiagnosticResult
+            {
+                Id = PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.DiagnosticId,
+                Message = PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.Message,
+                Severity = PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.Severity,
+                Locations =
+                    new[]
+                    {
+                        new DiagnosticResultLocation("Test0.cs", 9, 32)
+                    }
+            };
+
+
+            VerifyDiagnostic(original, expectedDiagnostic);
+            //VerifyFix(original, expected);
+        }
+
+        [TestMethod]
+        public void PrivateSetAutoPropertyCanUseReadOnlyAutoPropertyAnalyzer_WithStaticProperty_WithMixedStaticAndInstanceUsage_DoesNotInvokeWarning()
+        {
+            var original = @"
+using System;
+using System.Text;
+
+namespace ConsoleApplication1
+{
+    class MyClass
+    {
+        static int SomeProperty { get; private set; }
+
+        static MyClass()
+        {
+            SomeProperty = 42;
+        }
+
+        MyClass()
+        {
+            SomeProperty = 43;
+        }
+    }
+}";
+            VerifyDiagnostic(original);
         }
     }
 }
