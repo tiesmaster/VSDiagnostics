@@ -63,6 +63,10 @@ namespace VSDiagnostics.Diagnostics.General.PrivateSetAutoPropertyCanBeReadOnlyA
                 x is MemberAccessExpressionSyntax) /* this.SomeProperty == 42 */)
             {
                 var memberSymbol = context.SemanticModel.GetSymbolInfo(identifier);
+                if (memberSymbol.Symbol == null)
+                {
+                    continue;
+                }
                 if (memberSymbol.Symbol.Equals(propertySymbol))
                 {
                     var constructor = identifier.Ancestors().OfType<ConstructorDeclarationSyntax>().FirstOrDefault();
