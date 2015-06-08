@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
-using System.Collections.Generic;
-using System.Linq;
-
 
 namespace VSDiagnostics.Diagnostics.General.PrivateSetAutoPropertyCanBeReadOnlyAutoProperty
 {
@@ -14,14 +11,12 @@ namespace VSDiagnostics.Diagnostics.General.PrivateSetAutoPropertyCanBeReadOnlyA
     public class PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer : DiagnosticAnalyzer
     {
         public const string DiagnosticId = nameof(PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer);
-        internal const string Title = "Private Set AutoProperty is only set once. It can be made readonly.";
-        internal const string Message = "Private Set can be made ReadOnly";
+        internal const string Title = "A private set property can be made readonly.";
+        internal const string Message = "Property {0} can be made readonly.";
         internal const string Category = "General";
         internal const DiagnosticSeverity Severity = DiagnosticSeverity.Warning;
         internal static DiagnosticDescriptor Rule = new DiagnosticDescriptor(DiagnosticId, Title, Message, Category, Severity, true);
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
-
-        private List<SyntaxToken> _tokens = new List<SyntaxToken>();
 
         public override void Initialize(AnalysisContext context)
         {
@@ -30,56 +25,80 @@ namespace VSDiagnostics.Diagnostics.General.PrivateSetAutoPropertyCanBeReadOnlyA
 
         private void AnalyzeSymbol(SyntaxNodeAnalysisContext context)
         {
-            Diagnostic diagnostic = null;
-
-            var asProperty = context.Node as PropertyDeclarationSyntax;
-            if (asProperty != null)
+            var property = context.Node as PropertyDeclarationSyntax;
+            if (property == null)
             {
-                diagnostic = HandleProperty(asProperty);
+                return;
             }
 
-            if (diagnostic != null)
+            var setAccessor = property.AccessorList.Accessors.FirstOrDefault(x => x.IsKind(SyntaxKind.SetAccessorDeclaration));
+            if (setAccessor == null)
             {
-                context.ReportDiagnostic(diagnostic);
+                return;
             }
-        }
 
-        private Diagnostic HandleProperty(PropertyDeclarationSyntax propertyDeclaration)
-        {
-            var setter = propertyDeclaration.AccessorList.Accessors.FirstOrDefault(s => s.IsKind(SyntaxKind.SetAccessorDeclaration)
-                                                                                    && s.Modifiers.Any(SyntaxKind.PrivateKeyword));
-            if (setter != null)
+            if (!setAccessor.Modifiers.Any(SyntaxKind.PrivateKeyword))
             {
-                if ( !TreeHasMethodsThatSetProperty(propertyDeclaration) )
+                return;
+            }
+
+            var propertySymbol = context.SemanticModel.GetDeclaredSymbol(property);
+            if (propertySymbol == null)
+            {
+                return;
+            }
+            var isStaticProperty = propertySymbol.IsStatic;
+
+            var outerClass = property.Ancestors().OfType<ClassDeclarationSyntax>().LastOrDefault();
+            if (outerClass == null)
+            {
+                return;
+            }
+
+            var hasInstanceUsage = false;
+            var hasStaticUsage = false;
+
+            foreach (var identifier in outerClass.DescendantNodes().Where(x =>
+                x is IdentifierNameSyntax || /* SomeProperty = 42; */
+                x is MemberAccessExpressionSyntax) /* this.SomeProperty == 42 */)
+            {
+                var memberSymbol = context.SemanticModel.GetSymbolInfo(identifier);
+                if (memberSymbol.Symbol.Equals(propertySymbol))
                 {
-                    return Diagnostic.Create(Rule, setter.GetLocation(), "Property Setter", propertyDeclaration.Identifier);
+                    var constructor = identifier.Ancestors().OfType<ConstructorDeclarationSyntax>().FirstOrDefault();
+                    var isInConstructor = constructor != null;
+                    var isAssignmentExpression = identifier.Ancestors().OfType<AssignmentExpressionSyntax>().FirstOrDefault() != null;
+
+                    // Skip anything that isn't a setter
+                    if (!isAssignmentExpression)
+                    {
+                        continue;
+                    }
+
+                    // if it is a setter but outside the constructor, we don't report any diagnostic
+                    if (!isInConstructor)
+                    {
+                        return;
+                    }
+
+                    var isStaticConstructor = context.SemanticModel.GetDeclaredSymbol(constructor).IsStatic;
+                    if (isStaticConstructor)
+                    {
+                        hasStaticUsage = true;
+                    }
+                    else
+                    {
+                        hasInstanceUsage = true;
+                    }
                 }
             }
 
-            return null;
-        }
-
-        private static bool TreeHasMethodsThatSetProperty(PropertyDeclarationSyntax propertyDeclaration)
-        {
-            var parentClass = propertyDeclaration.Ancestors()
-                                .OfType<ClassDeclarationSyntax>()
-                                .First();
-      
-            //strip any nested classes
-            parentClass = parentClass.RemoveNodes(parentClass.DescendantNodes().OfType<ClassDeclarationSyntax>(), SyntaxRemoveOptions.KeepNoTrivia);
-
-            var assignments = parentClass.DescendantNodes()
-                             .OfType<AssignmentExpressionSyntax>();
-
-            return assignments.Select(a => a.Left)
-                                //bug: a.Left is sometimes a IdentifierNameSyntax, so this cast is broken
-                                .Cast<MemberAccessExpressionSyntax>()
-                                .Select(l => l.Name.Identifier)
-                                .Any
-                                (
-                                    i => i.Text == propertyDeclaration.Identifier.Text
-                                    && i.Parent.Ancestors().All(anc => anc.GetType() != typeof(ConstructorDeclarationSyntax))
-                                );
+            if ((hasStaticUsage && isStaticProperty && !hasInstanceUsage) ||
+                (hasInstanceUsage && !hasStaticUsage && !isStaticProperty) ||
+                (!hasStaticUsage && !hasInstanceUsage))
+            {
+                context.ReportDiagnostic(Diagnostic.Create(Rule, property.Identifier.GetLocation(), propertySymbol.Name));
+            }
         }
     }
 }
