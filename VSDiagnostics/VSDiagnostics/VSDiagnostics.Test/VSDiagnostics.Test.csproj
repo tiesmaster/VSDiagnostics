@@ -123,6 +123,8 @@
     <Compile Include="Tests\General\CompareBooleanToTrueLiteralAnalyzerTests.cs" />
     <Compile Include="Tests\General\ConditionalOperatorReturnsDefaultOptionsAnalyzerTests.cs" />
     <Compile Include="Tests\General\IfStatementWithoutBracesAnalyzerTests.cs" />
+    <Compile Include="Tests\General\NonEncapsulatedOrMutableFieldAnalyzerTests.cs" />
+    <Compile Include="Tests\General\NamingConventionsAnalyzerTests.cs" />
     <Compile Include="Tests\General\NullableToShorthandAnalyzerTests.cs" />
     <Compile Include="Tests\General\OnPropertyChangedWithoutNameOfOperatorAnalyzerTests.cs" />
     <Compile Include="Tests\General\SimplifyExpressionBodiedMemberAnalyzerTests.cs" />
@@ -131,6 +133,7 @@
     <Compile Include="Tests\Strings\ReplaceEmptyStringWithStringDotEmptyTests.cs" />
     <Compile Include="Tests\Tests\TestMethodWithoutPublicModifierAnalyzerTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Tests\Utilities\NamingConventionsTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
