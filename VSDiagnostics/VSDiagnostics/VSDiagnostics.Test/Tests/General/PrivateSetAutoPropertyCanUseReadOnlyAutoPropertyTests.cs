@@ -629,5 +629,35 @@ namespace ConsoleApplication1
             VerifyDiagnostic(original, expectedDiagnostic);
             //VerifyFix(original, expected);
         }
+
+        [TestMethod]
+        public void PrivateSetAutoPropertyCanUseReadOnlyAutoPropertyAnalyzer_WithStaticProperty_WithStaticUsage_FromNestedClass_DoesNotInvokeWarning()
+        {
+            var original = @"
+using System;
+using System.Text;
+
+namespace ConsoleApplication1
+{
+    public class MyClass
+    {
+        public static int SomeProperty { get; private set; }
+
+        static MyClass()
+        {
+            SomeProperty = 42;
+        }
+
+        private class NestedClass
+        {
+            static NestedClass()
+            {
+                SomeProperty = 43;
+            }
+        }
+    }
+}";
+            VerifyDiagnostic(original);
+        }
     }
 }
