@@ -111,7 +111,6 @@
     <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Class1.cs" />
     <Compile Include="Tests\Async\AsyncMethodWithoutAsyncSuffixAnalyzerTests.cs" />
     <Compile Include="Tests\Exceptions\ArgumentExceptionWithNameofOperatorAnalyzerTests.cs" />
     <Compile Include="Tests\Exceptions\CatchNullReferenceExceptionAnalyzerTests.cs" />
