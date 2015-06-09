@@ -3,18 +3,18 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RoslynTester.DiagnosticResults;
 using RoslynTester.Helpers.CSharp;
-using VSDiagnostics.Diagnostics.General.PrivateSetAutoPropertyCanBeReadOnlyAutoProperty;
+using VSDiagnostics.Diagnostics.General.RedundantPrivateSetterProperty;
 
 namespace VSDiagnostics.Test.Tests.General
 {
     [TestClass]
-    public class PrivateSetAutoPropertyCanUseReadOnlyAutoPropertyTests : CSharpCodeFixVerifier
+    public class RedundantPrivateSetterPropertyAnalyzerTests : CSharpCodeFixVerifier
     {
         protected override CodeFixProvider CodeFixProvider => null;
-        protected override DiagnosticAnalyzer DiagnosticAnalyzer => new PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer();
+        protected override DiagnosticAnalyzer DiagnosticAnalyzer => new RedundantPrivateSetterPropertyAnalyzer();
 
         [TestMethod]
-        public void PrivateSetAutoPropertyCanUseReadOnlyAutoPropertyAnalyzer_WithConstructorSetAccess_InvokesWarning()
+        public void RedundantPrivateSetterPropertyAnalyzer_WithConstructorSetAccess_InvokesWarning()
         {
             var original = @"
 using System;
@@ -53,9 +53,9 @@ namespace ConsoleApplication1
 
             var expectedDiagnostic = new DiagnosticResult
             {
-                Id = PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.DiagnosticId,
-                Message = string.Format(string.Format(PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.Message, "SomeProperty"), "SomeProperty"),
-                Severity = PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.Severity,
+                Id = RedundantPrivateSetterPropertyAnalyzer.DiagnosticId,
+                Message = string.Format(string.Format(RedundantPrivateSetterPropertyAnalyzer.Message, "SomeProperty"), "SomeProperty"),
+                Severity = RedundantPrivateSetterPropertyAnalyzer.Severity,
                 Locations =
                     new[]
                     {
@@ -69,7 +69,7 @@ namespace ConsoleApplication1
         }
 
         [TestMethod]
-        public void PrivateSetAutoPropertyCanUseReadOnlyAutoPropertyAnalyzer_WithMethodGetAccess_InvokesWarning()
+        public void RedundantPrivateSetterPropertyAnalyzer_WithMethodGetAccess_InvokesWarning()
         {
             var original = @"
 using System;
@@ -107,9 +107,9 @@ namespace ConsoleApplication1
 
             var expectedDiagnostic = new DiagnosticResult
             {
-                Id = PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.DiagnosticId,
-                Message = string.Format(PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.Message, "SomeProperty"),
-                Severity = PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.Severity,
+                Id = RedundantPrivateSetterPropertyAnalyzer.DiagnosticId,
+                Message = string.Format(RedundantPrivateSetterPropertyAnalyzer.Message, "SomeProperty"),
+                Severity = RedundantPrivateSetterPropertyAnalyzer.Severity,
                 Locations =
                     new[]
                     {
@@ -123,7 +123,7 @@ namespace ConsoleApplication1
         }
 
         [TestMethod]
-        public void PrivateSetAutoPropertyCanUseReadOnlyAutoPropertyAnalyzer_WithMethodSetAccess_DoesNotInvokeWarning()
+        public void RedundantPrivateSetterPropertyAnalyzer_WithMethodSetAccess_DoesNotInvokeWarning()
         {
             var original = @"
 using System;
@@ -146,7 +146,7 @@ namespace ConsoleApplication1
         }
 
         [TestMethod]
-        public void PrivateSetAutoPropertyCanUseReadOnlyAutoPropertyAnalyzer_WithGetAndSetAccess_InvokesWarning()
+        public void RedundantPrivateSetterPropertyAnalyzer_WithGetAndSetAccess_InvokesWarning()
         {
             var original = @"
 using System;
@@ -194,9 +194,9 @@ namespace ConsoleApplication1
 
             var expectedDiagnostic = new DiagnosticResult
             {
-                Id = PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.DiagnosticId,
-                Message = string.Format(PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.Message, "SomeProperty"),
-                Severity = PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.Severity,
+                Id = RedundantPrivateSetterPropertyAnalyzer.DiagnosticId,
+                Message = string.Format(RedundantPrivateSetterPropertyAnalyzer.Message, "SomeProperty"),
+                Severity = RedundantPrivateSetterPropertyAnalyzer.Severity,
                 Locations =
                     new[]
                     {
@@ -210,7 +210,7 @@ namespace ConsoleApplication1
         }
 
         [TestMethod]
-        public void PrivateSetAutoPropertyCanUseReadOnlyAutoPropertyAnalyzer_WithoutPrivateSetter_DoesNotInvokeWarning()
+        public void RedundantPrivateSetterPropertyAnalyzer_WithoutPrivateSetter_DoesNotInvokeWarning()
         {
             var original = @"
 using System;
@@ -238,7 +238,7 @@ namespace ConsoleApplication1
         }
 
         [TestMethod]
-        public void PrivateSetAutoPropertyCanUseReadOnlyAutoPropertyAnalyzer_WithNestedClass_WithoutStaticProperty_InvokesWarning()
+        public void RedundantPrivateSetterPropertyAnalyzer_WithNestedClass_WithoutStaticProperty_InvokesWarning()
         {
             var original = @"
 using System;
@@ -296,9 +296,9 @@ namespace ConsoleApplication1
 
             var expectedDiagnostic = new DiagnosticResult
             {
-                Id = PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.DiagnosticId,
-                Message = string.Format(PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.Message, "SomeProperty"),
-                Severity = PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.Severity,
+                Id = RedundantPrivateSetterPropertyAnalyzer.DiagnosticId,
+                Message = string.Format(RedundantPrivateSetterPropertyAnalyzer.Message, "SomeProperty"),
+                Severity = RedundantPrivateSetterPropertyAnalyzer.Severity,
                 Locations = new[]
                 {
                     new DiagnosticResultLocation("Test0.cs", 9, 20)
@@ -311,7 +311,7 @@ namespace ConsoleApplication1
         }
 
         [TestMethod]
-        public void PrivateSetAutoPropertyCanUseReadOnlyAutoPropertyAnalyzer_WithNestedClass_InvokesWarning()
+        public void RedundantPrivateSetterPropertyAnalyzer_WithNestedClass_InvokesWarning()
         {
             var original = @"
 using System;
@@ -355,9 +355,9 @@ namespace ConsoleApplication1
 
             var expectedDiagnostic = new DiagnosticResult
             {
-                Id = PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.DiagnosticId,
-                Message = string.Format(PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.Message, "SomeProperty"),
-                Severity = PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.Severity,
+                Id = RedundantPrivateSetterPropertyAnalyzer.DiagnosticId,
+                Message = string.Format(RedundantPrivateSetterPropertyAnalyzer.Message, "SomeProperty"),
+                Severity = RedundantPrivateSetterPropertyAnalyzer.Severity,
                 Locations = new[]
                 {
                     new DiagnosticResultLocation("Test0.cs", 11, 26)
@@ -370,7 +370,7 @@ namespace ConsoleApplication1
         }
 
         [TestMethod]
-        public void PrivateSetAutoPropertyCanUseReadOnlyAutoPropertyAnalyzer_AssignmentWithThisKeyword_InvokesWarning()
+        public void RedundantPrivateSetterPropertyAnalyzer_AssignmentWithThisKeyword_InvokesWarning()
         {
             var original = @"
 using System;
@@ -407,9 +407,9 @@ namespace ConsoleApplication1
 }";
             var expectedDiagnostic = new DiagnosticResult
             {
-                Id = PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.DiagnosticId,
-                Message = string.Format(PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.Message, "SomeProperty"),
-                Severity = PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.Severity,
+                Id = RedundantPrivateSetterPropertyAnalyzer.DiagnosticId,
+                Message = string.Format(RedundantPrivateSetterPropertyAnalyzer.Message, "SomeProperty"),
+                Severity = RedundantPrivateSetterPropertyAnalyzer.Severity,
                 Locations =
                     new[]
                     {
@@ -423,7 +423,7 @@ namespace ConsoleApplication1
         }
 
         [TestMethod]
-        public void PrivateSetAutoPropertyCanUseReadOnlyAutoPropertyAnalyzer_WithStaticProperty_WithInstanceUsage_DoesNotInvokeWarning()
+        public void RedundantPrivateSetterPropertyAnalyzer_WithStaticProperty_WithInstanceUsage_DoesNotInvokeWarning()
         {
             var original = @"
 using System;
@@ -445,7 +445,7 @@ namespace ConsoleApplication1
         }
 
         [TestMethod]
-        public void PrivateSetAutoPropertyCanUseReadOnlyAutoPropertyAnalyzer_WithStaticProperty_WithOnlyStaticUsage_InvokesWarning()
+        public void RedundantPrivateSetterPropertyAnalyzer_WithStaticProperty_WithOnlyStaticUsage_InvokesWarning()
         {
             var original = @"
 using System;
@@ -482,9 +482,9 @@ namespace ConsoleApplication1
 }";
             var expectedDiagnostic = new DiagnosticResult
             {
-                Id = PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.DiagnosticId,
-                Message = string.Format(PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.Message, "SomeProperty"),
-                Severity = PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.Severity,
+                Id = RedundantPrivateSetterPropertyAnalyzer.DiagnosticId,
+                Message = string.Format(RedundantPrivateSetterPropertyAnalyzer.Message, "SomeProperty"),
+                Severity = RedundantPrivateSetterPropertyAnalyzer.Severity,
                 Locations =
                     new[]
                     {
@@ -498,7 +498,7 @@ namespace ConsoleApplication1
         }
 
         [TestMethod]
-        public void PrivateSetAutoPropertyCanUseReadOnlyAutoPropertyAnalyzer_WithStaticProperty_WithMixedStaticAndInstanceUsage_DoesNotInvokeWarning()
+        public void RedundantPrivateSetterPropertyAnalyzer_WithStaticProperty_WithMixedStaticAndInstanceUsage_DoesNotInvokeWarning()
         {
             var original = @"
 using System;
@@ -525,7 +525,7 @@ namespace ConsoleApplication1
         }
 
         [TestMethod]
-        public void PrivateSetAutoPropertyCanUseReadOnlyAutoPropertyAnalyzer_AssignmentWithMemberAccessExpression_InvokesWarning()
+        public void RedundantPrivateSetterPropertyAnalyzer_AssignmentWithMemberAccessExpression_InvokesWarning()
         {
             var original = @"
 using System;
@@ -562,9 +562,9 @@ namespace ConsoleApplication1
 }";
             var expectedDiagnostic = new DiagnosticResult
             {
-                Id = PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.DiagnosticId,
-                Message = string.Format(PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.Message, "SomeProperty"),
-                Severity = PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.Severity,
+                Id = RedundantPrivateSetterPropertyAnalyzer.DiagnosticId,
+                Message = string.Format(RedundantPrivateSetterPropertyAnalyzer.Message, "SomeProperty"),
+                Severity = RedundantPrivateSetterPropertyAnalyzer.Severity,
                 Locations =
                     new[]
                     {
@@ -578,7 +578,7 @@ namespace ConsoleApplication1
         }
 
         [TestMethod]
-        public void PrivateSetAutoPropertyCanUseReadOnlyAutoPropertyAnalyzer_AssigningPropertyToSomethingElse_InvokesWarning()
+        public void RedundantPrivateSetterPropertyAnalyzer_AssigningPropertyToSomethingElse_InvokesWarning()
         {
             var original = @"
 using System;
@@ -615,9 +615,9 @@ namespace ConsoleApplication1
 }";
             var expectedDiagnostic = new DiagnosticResult
             {
-                Id = PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.DiagnosticId,
-                Message = string.Format(PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.Message, "SomeProperty"),
-                Severity = PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer.Severity,
+                Id = RedundantPrivateSetterPropertyAnalyzer.DiagnosticId,
+                Message = string.Format(RedundantPrivateSetterPropertyAnalyzer.Message, "SomeProperty"),
+                Severity = RedundantPrivateSetterPropertyAnalyzer.Severity,
                 Locations =
                     new[]
                     {
@@ -631,7 +631,7 @@ namespace ConsoleApplication1
         }
 
         [TestMethod]
-        public void PrivateSetAutoPropertyCanUseReadOnlyAutoPropertyAnalyzer_WithStaticProperty_WithStaticUsage_FromNestedClass_DoesNotInvokeWarning()
+        public void RedundantPrivateSetterPropertyAnalyzer_WithStaticProperty_WithStaticUsage_FromNestedClass_DoesNotInvokeWarning()
         {
             var original = @"
 using System;

@@ -6,12 +6,12 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 
-namespace VSDiagnostics.Diagnostics.General.PrivateSetAutoPropertyCanBeReadOnlyAutoProperty
+namespace VSDiagnostics.Diagnostics.General.RedundantPrivateSetterProperty
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    public class PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer : DiagnosticAnalyzer
+    public class RedundantPrivateSetterPropertyAnalyzer : DiagnosticAnalyzer
     {
-        public const string DiagnosticId = nameof(PrivateSetAutoPropertyCanBeReadOnlyAutoPropertyAnalyzer);
+        public const string DiagnosticId = nameof(RedundantPrivateSetterPropertyAnalyzer);
         internal const string Title = "A private set property can be made readonly.";
         internal const string Message = "Property {0} can be made readonly.";
         internal const string Category = "General";
@@ -19,43 +19,40 @@ namespace VSDiagnostics.Diagnostics.General.PrivateSetAutoPropertyCanBeReadOnlyA
         internal static DiagnosticDescriptor Rule = new DiagnosticDescriptor(DiagnosticId, Title, Message, Category, Severity, true);
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-        private readonly HashSet<PropertyDeclarationSyntax> _affectedProperties = new HashSet<PropertyDeclarationSyntax>(); 
-
         public override void Initialize(AnalysisContext context)
         {
-            context.RegisterSyntaxNodeAction(AnalyzeSymbol, SyntaxKind.SimpleAssignmentExpression, SyntaxKind.PropertyDeclaration);
-            context.RegisterCompilationAction(ReportDiagnostics);
+            var container = new Container();
+            context.RegisterSyntaxNodeAction(container.AnalyzeSymbol, SyntaxKind.PropertyDeclaration);
+            context.RegisterCompilationAction(container.ReportDiagnostics);
         }
 
-        private void ReportDiagnostics(CompilationAnalysisContext context)
+        private class Container
         {
-            foreach (var property in _affectedProperties)
-            {
-                context.ReportDiagnostic(Diagnostic.Create(Rule, property.Identifier.GetLocation(), property.Identifier.ValueText));
-            }
-        }
+            private readonly HashSet<PropertyDeclarationSyntax> _affectedProperties = new HashSet<PropertyDeclarationSyntax>();
 
-        /// <summary>
-        ///     The overarching idea behind this approach is that we register for an action on each assignment expression.
-        ///     This has as result that the analyzer is triggered each time someone wants to assign a value to something else.
-        ///     We do this so the analyzer will be triggered when the property in question would be assigned.
-        ///     If we would instead trigger the analyzer on property declaration, the analyzer would only be triggered at the
-        ///     loading of the document and whenever we change something about the property's syntax.
-        ///     Each time the analyzer is run, we gather all properties in the outer class and check for each of them if they apply
-        ///     for a warning or not.
-        ///     Thoughts for an optimization: check each property at load time but only check the affected property when triggered
-        ///     at runtime. (currently not implemented)
-        /// </summary>
-        private void AnalyzeSymbol(SyntaxNodeAnalysisContext context)
-        {
-            var outerClass = context.Node.Ancestors().OfType<ClassDeclarationSyntax>().LastOrDefault();
-            if (outerClass == null)
+            public void ReportDiagnostics(CompilationAnalysisContext context)
             {
-                return;
+                foreach (var property in _affectedProperties)
+                {
+                    context.ReportDiagnostic(Diagnostic.Create(Rule, property.Identifier.GetLocation(), property.Identifier.ValueText));
+                }
             }
 
-            foreach (var property in outerClass.DescendantNodes().OfType<PropertyDeclarationSyntax>())
+            public void AnalyzeSymbol(SyntaxNodeAnalysisContext context)
             {
+                var outerClass = context.Node.Ancestors().OfType<ClassDeclarationSyntax>().LastOrDefault();
+                if (outerClass == null)
+                {
+                    return;
+                }
+
+                var property = context.Node as PropertyDeclarationSyntax;
+                if (property == null)
+                {
+                    return;
+                }
+
+
                 var setAccessor = property.AccessorList.Accessors.FirstOrDefault(x => x.IsKind(SyntaxKind.SetAccessorDeclaration));
                 if (setAccessor == null)
                 {
