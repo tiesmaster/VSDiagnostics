@@ -486,4 +486,14 @@
   <data name="FlagsEnumValuesAreNotPowersOfTwoValuesDontFitAnalyzerTitle" xml:space="preserve">
     <value>[Flags] enum its values are not explicit powers of 2 and its values dont fit in the specified enum type.</value>
   </data>
+  <data name="FieldCanBeMadeReadonlyAnalyzerMessage" xml:space="preserve">
+    <value>Field {0} can be readonly.</value>
+    <comment>{0} - Field name</comment>
+  </data>
+  <data name="FieldCanBeMadeReadonlyAnalyzerTitle" xml:space="preserve">
+    <value>Field can be made readonly.</value>
+  </data>
+  <data name="FieldCanBeMadeReadonlyCodeFixTitle" xml:space="preserve">
+    <value>Add 'readonly' modifier</value>
+  </data>
 </root>

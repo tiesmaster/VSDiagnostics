@@ -494,6 +494,33 @@ namespace VSDiagnostics {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Field {0} can be readonly..
+        /// </summary>
+        internal static string FieldCanBeMadeReadonlyAnalyzerMessage {
+            get {
+                return ResourceManager.GetString("FieldCanBeMadeReadonlyAnalyzerMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Field can be made readonly..
+        /// </summary>
+        internal static string FieldCanBeMadeReadonlyAnalyzerTitle {
+            get {
+                return ResourceManager.GetString("FieldCanBeMadeReadonlyAnalyzerTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Add &apos;readonly&apos; modifier.
+        /// </summary>
+        internal static string FieldCanBeMadeReadonlyCodeFixTitle {
+            get {
+                return ResourceManager.GetString("FieldCanBeMadeReadonlyCodeFixTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to [Flags] enum {0} its values are not explicit powers of 2.
         /// </summary>
         internal static string FlagsEnumValuesAreNotPowersOfTwoAnalyzerMessage {
